@@ -696,6 +696,11 @@ public class WifiNative {
                 } else if (line.startsWith(BSS_DELIMITER_STR) || line.startsWith(BSS_END_STR)) {
                     if (bssid != null) {
                         try {
+                            if (flags.contains("MESH")) {
+                                Log.d(TAG, "Skipping MESH enabled network with bssid="+bssid);
+                                continue;
+                            }
+
                             if (infoElementsStr == null) {
                                 throw new IllegalArgumentException("Null information element data");
                             }
@@ -909,6 +914,11 @@ public class WifiNative {
     public void setP2pDisable() {
         doBooleanCommand("SET p2p_disabled 1");
     }
+
+    public void setPnoScanPlans() {
+        doBooleanCommand("SET sched_scan_plans 10:6 60");
+    }
+
     public boolean saveConfig() {
         return doBooleanCommand("SAVE_CONFIG");
     }
@@ -920,6 +930,14 @@ public class WifiNative {
 
     public boolean clearBlacklist() {
         return doBooleanCommand("BLACKLIST clear");
+    }
+
+    public boolean flushAllHlp() {
+        return doBooleanCommand("FILS_HLP_REQ_FLUSH");
+    }
+
+    public boolean addHlpReq(String dst, String hlpPacket) {
+        return doBooleanCommand("FILS_HLP_REQ_ADD " + dst + " " + hlpPacket);
     }
 
     public boolean setSuspendOptimizations(boolean enabled) {

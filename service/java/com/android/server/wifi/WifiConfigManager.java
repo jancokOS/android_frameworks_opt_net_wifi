@@ -37,6 +37,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiConfiguration.KeyMgmt;
 import android.net.wifi.WifiConfiguration.Status;
+import android.net.wifi.WifiConfiguration.Fils;
 import android.net.wifi.WifiEnterpriseConfig;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -1722,7 +1723,6 @@ public class WifiConfigManager {
         // 2) mConfiguredNetworks caches a Passpoint network's FQDN the moment the network is added.
         //    Thus, we had to load the FQDNs first.
         mConfiguredNetworks.clear();
-        mScanDetailCaches.clear();
         for (Map.Entry<String, WifiConfiguration> entry : configs.entrySet()) {
             final String configKey = entry.getKey();
             final WifiConfiguration config = entry.getValue();
@@ -2991,6 +2991,12 @@ public class WifiConfigManager {
             if (result.capabilities.contains("EAP")) {
                 config.allowedKeyManagement.set(KeyMgmt.WPA_EAP);
                 config.allowedKeyManagement.set(KeyMgmt.IEEE8021X);
+            }
+            if (result.capabilities.contains("FILS-SHA256")) {
+                config.filsKeyMgmts.set(Fils.FILS_SHA256);
+            }
+            if (result.capabilities.contains("FILS-SHA384")) {
+                config.filsKeyMgmts.set(Fils.FILS_SHA384);
             }
 
             if (result.capabilities.contains("WEP")) {

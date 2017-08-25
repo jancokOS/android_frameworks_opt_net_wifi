@@ -363,6 +363,7 @@ public class WifiServiceImpl extends IWifiManager.Stub {
         mWifiStateMachine = new WifiStateMachine(mContext, mFacade,
             wifiStateMachineThread.getLooper(), mUserManager, mWifiInjector,
             new BackupManagerProxy(), mCountryCode);
+        mWifiStateMachine.setTrafficPoller(mTrafficPoller);
         mSettingsStore = new WifiSettingsStore(mContext);
         mWifiStateMachine.enableRssiPolling(true);
         mBatteryStats = BatteryStatsService.getService();
@@ -636,11 +637,6 @@ public class WifiServiceImpl extends IWifiManager.Stub {
             Binder.restoreCallingIdentity(ident);
         }
 
-        if (!mIsControllerStarted) {
-            Slog.e(TAG,"WifiController is not yet started, abort setWifiEnabled");
-            return false;
-        }
-
         if (mPermissionReviewRequired) {
             final int wiFiEnabledState = getWifiEnabledState();
             if (enable) {
@@ -660,6 +656,10 @@ public class WifiServiceImpl extends IWifiManager.Stub {
             }
         }
 
+        if (!mIsControllerStarted) {
+            Slog.e(TAG,"WifiController is not yet started, abort setWifiEnabled");
+            return false;
+        }
         mWifiController.sendMessage(CMD_WIFI_TOGGLED);
         return true;
     }
@@ -1507,7 +1507,7 @@ public class WifiServiceImpl extends IWifiManager.Stub {
                        try {
                            setWifiEnabled(mContext.getPackageName(), true);
                        } catch (RemoteException e) {
-                           /* ignore - local call */
+                           throw e.rethrowFromSystemServer();
                        }
                    }
                }
@@ -1520,7 +1520,7 @@ public class WifiServiceImpl extends IWifiManager.Stub {
                            try {
                                setWifiEnabled(mContext.getPackageName(), false);
                            } catch (RemoteException e) {
-                               /* ignore - local call */
+                               throw e.rethrowFromSystemServer();
                            }
                        } else {
                            /**
@@ -1947,7 +1947,7 @@ public class WifiServiceImpl extends IWifiManager.Stub {
                 try {
                     setWifiEnabled(mContext.getOpPackageName(), true);
                 } catch (RemoteException e) {
-                    /* ignore - local call */
+                   /* ignore - local call */
                 }
             }
         }
